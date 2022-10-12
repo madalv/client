@@ -1,0 +1,17 @@
+services:
+  client:
+    image: client-img
+    hostname: client
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - "/home/madalv/Projects/client/config:/app/config"
+    ports:
+      - "9001:9001"
+    networks:
+      - restaurant
+networks:
+  restaurant:
+    name: restaurant
+    external: true
