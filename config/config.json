@@ -1,4 +1,9 @@
 {
   "port": 9001,
-  "ordserv": "ordserv:9000"
+  "ordserv": "localhost:9000",
+  "client_id_max": 500,
+  "timeunit": 100,
+  "client_wait_min": 30,
+  "client_wait_max": 150,
+  "max_items_order": 5
 }

@@ -13,6 +13,12 @@ data class TakeoutOrder(
 )
 
 @Serializable
+data class TakeoutList(
+    @SerialName("client_id") val clientID: Int,
+    val orders: MutableList<TakeoutOrder>
+)
+
+@Serializable
 data class TakeoutResponse(
     @SerialName("order_id")val id: Int,
     @SerialName("restaurant_id") val restaurantID: Int,
@@ -23,14 +29,9 @@ data class TakeoutResponse(
 )
 
 @Serializable
-data class TakeoutList(
-    @SerialName("order_id") val id: Int,
-    @SerialName("client_id") val clientID: Int,
-    val orders: MutableList<TakeoutOrder>
-)
-
-@Serializable
 data class TakeoutResponseList(
     @SerialName("order_id") val orderID: Int,
     val orders: MutableList<TakeoutResponse>
 )
+
+
