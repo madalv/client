@@ -3,10 +3,9 @@ package com.madalv
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import com.madalv.plugins.*
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.lang.Thread.sleep
-import kotlin.random.Random
+import java.util.concurrent.ThreadLocalRandom
 
 fun main() {
     embeddedServer(Netty, port = cfg.port, host = "0.0.0.0") {
@@ -14,13 +13,13 @@ fun main() {
         configureRouting()
 
         while(true){
-
             launch {
-                val client = Client(5)
+                val client = Client()
+                client.generateTakeoutList()
                 client.sendOrder()
                 logger.debug { "CLIENT ${client.id} sent order to Ordering Service: ${client.orderList}" }
             }
-            sleep(10000)
+            sleep(ThreadLocalRandom.current().nextInt(cfg.clientWaitMin, cfg.clientWaitMax) * cfg.timeunit)
         }
     }.start(wait = true)
 }
