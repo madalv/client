@@ -19,8 +19,7 @@ fun main() {
                 clients.getAndIncrement()
                 launch {
                     val client = Client()
-                    client.sendOrder()
-                    //delay(ThreadLocalRandom.current().nextInt(cfg.clientWaitMin, cfg.clientWaitMax) * cfg.timeUnit)
+                    client.order()
                 }
             }
         }

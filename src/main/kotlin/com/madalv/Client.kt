@@ -18,7 +18,7 @@ class Client {
         return client.get("http://${cfg.ordserv}/menu").body()
     }
 
-    suspend fun generateTakeoutList() {
+    private suspend fun generateTakeoutList() {
         val menuData = getMenu()
         val r = ThreadLocalRandom.current()
         if (menuData.restaurants < 1) {
@@ -55,22 +55,25 @@ class Client {
     }
 
 
-    suspend fun sendOrder() {
-
+    private suspend fun sendOrder() {
         var response: TakeoutResponseList? = null
 
         runBlocking {
             generateTakeoutList()
-
             logger.debug { orderList }
-             response = client.post("http://${cfg.ordserv}/order") {
+
+            response = client.post("http://${cfg.ordserv}/order") {
                 contentType(ContentType.Application.Json)
                 setBody(orderList)
             }.body()
         }
 
         responseList = response!!
-        logger.debug { "$response ${clients.get()}" }
+    }
+
+
+    suspend fun order() {
+        CoroutineScope(Dispatchers.Default).launch {sendOrder()}.join()
 
         for (r in responseList.responses) {
             val job = CoroutineScope(Dispatchers.Default).launch {
@@ -78,7 +81,7 @@ class Client {
                 var re: DetailedTakeout = client.get("http://${r.resAddress}/v2/order/${r.id}").body()
 
                 while(!re.isReady) {
-                    logger.debug { "Takeout ${re.id} from not ready res ${r.restaurantID} not ready yet." }
+                    logger.debug { "Takeout ${re.id} from res ${r.restaurantID} not ready yet." }
                     delay(re.estimatedWait.roundToLong() * cfg.timeUnit)
                     re = client.get("http://${r.resAddress}/v2/order/${r.id}").body()
                 }
@@ -87,14 +90,13 @@ class Client {
                 logger.debug { " Client $id got takeout ${re.id} from res ${r.restaurantID}: MAXWAIT ${re.maxWait} TIME ${re.cookingTime} RATING $rating"  }
                 ratings.orderId = re.id
                 ratings.ratings.add(Rating(r.restaurantID, rating, re.id, re.estimatedWait, re.cookingTime))
-
             }
             jobs.add(job)
-
         }
 
         jobs.joinAll() // wait for all ratings
 
+        // send ratings
         client.post("http://${cfg.ordserv}/rating") {
             contentType(ContentType.Application.Json)
             setBody(ratings)

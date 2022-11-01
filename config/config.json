@@ -6,5 +6,5 @@
   "client_wait_min": 30,
   "client_wait_max": 150,
   "max_items_order": 5,
-  "max_clients": 3
+  "max_clients": 5
 }
